@@ -5,7 +5,7 @@ import Login from './screens/Login.js'
 export default function App() {
 	return (
 		<Routes>
-			<Route path="/payroll-ui/" element={<Login />} />
+			<Route path="/" element={<Login />} />
 			{Object.entries(screens).map(([screenName, ScreenComponent]) => (
 				<Route
 					key={screenName}
