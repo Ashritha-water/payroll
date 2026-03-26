@@ -59,6 +59,14 @@ export default function Administration() {
   const [activeTab, setActiveTab] = useState<'users' | 'modules' | 'audit' | 'devices' | 'policies'>('users')
   const [moduleState, setModuleState] = useState<Record<string, boolean>>(Object.fromEntries(modules.map(m => [m.name, m.enabled])))
 
+  const [showAddUser, setShowAddUser] = useState(false)
+  const [newUser, setNewUser] = useState({
+    name: '',
+    role: '',
+    access: '',
+    status: 'active',
+  })
+
   const tabs = [
     { key: 'users', label: 'User Management', icon: Users },
     { key: 'modules', label: 'Module Config', icon: Settings },
@@ -109,7 +117,9 @@ export default function Administration() {
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
             <div className="p-4 border-b border-gray-100 flex justify-between items-center">
               <h2 className="font-bold text-gray-900">Admin User Management</h2>
-              <button className="flex items-center gap-2 px-3 py-2 rounded-lg text-white text-sm font-semibold cursor-pointer" style={{ backgroundColor: '#1A3555' }}>
+              <button 
+                onClick={() => setShowAddUser(true)}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg text-white text-sm font-semibold cursor-pointer" style={{ backgroundColor: '#1A3555' }}>
                 <Plus size={14} /> Add User
               </button>
             </div>
@@ -283,6 +293,96 @@ export default function Administration() {
                     </button>
                   </div>
                 ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showAddUser && (
+          <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
+            <div className="bg-white rounded-xl shadow-lg w-[400px] p-6">
+
+              <h2 className="text-lg font-bold text-gray-900 mb-4">Add New User</h2>
+
+              <div className="space-y-4">
+
+                {/* Name */}
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1">
+                    Name
+                  </label>
+                  <input
+                    type="text"
+                    value={newUser.name}
+                    onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
+                    className="w-full border rounded-lg px-3 py-2 text-sm"
+                    placeholder="Enter full name"
+                  />
+                </div>
+
+                {/* Role */}
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1">
+                    Role
+                  </label>
+                  <input
+                    type="text"
+                    value={newUser.role}
+                    onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
+                    className="w-full border rounded-lg px-3 py-2 text-sm"
+                    placeholder="e.g. HR Administrator"
+                  />
+                </div>
+
+                {/* Access Level */}
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1">
+                    Access Level
+                  </label>
+                  <input
+                    type="text"
+                    value={newUser.access}
+                    onChange={(e) => setNewUser({ ...newUser, access: e.target.value })}
+                    className="w-full border rounded-lg px-3 py-2 text-sm"
+                    placeholder="e.g. Super Admin"
+                  />
+                </div>
+
+                {/* Status */}
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1">
+                    Status
+                  </label>
+                  <select
+                    value={newUser.status}
+                    onChange={(e) => setNewUser({ ...newUser, status: e.target.value })}
+                    className="w-full border rounded-lg px-3 py-2 text-sm"
+                  >
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                  </select>
+                </div>
+
+              </div>
+
+              <div className="flex justify-end gap-2 mt-5">
+                <button
+                  onClick={() => setShowAddUser(false)}
+                  className="px-4 py-2 text-sm rounded-lg border cursor-pointer"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  onClick={() => {
+                    console.log(newUser) // later replace with API call
+                    setShowAddUser(false)
+                  }}
+                  className="px-4 py-2 text-sm text-white rounded-lg cursor-pointer"
+                  style={{ backgroundColor: '#1A3555' }}
+                >
+                  Submit
+                </button>
               </div>
             </div>
           </div>

@@ -10,6 +10,7 @@ import {
   List, HeartPulse, Building2, Landmark, HardHat,
   Smartphone, TrendingUp, ClipboardList
 } from 'lucide-react'
+import { useLocation,useNavigate } from 'react-router-dom'
 
 interface SidebarProps {
   active?: string
@@ -106,8 +107,30 @@ const groups = [
 ]
 
 export default function Sidebar({ active }: SidebarProps) {
+  const location = useLocation()
   const [openSubs, setOpenSubs] = useState<string[]>([])
+  const navigate = useNavigate()
 
+  React.useEffect(() => {
+  const currentPath = location.pathname
+    console.log("Calling First Time")
+  const matchedSubs: string[] = []
+
+  groups.forEach(group => {
+    group.items.forEach(item => {
+      if (item.sub) {
+        const isChildActive = item.sub.some(sub => sub.to === currentPath)
+      const isParentActive = item.to === currentPath
+
+      if (isChildActive || isParentActive) {
+        matchedSubs.push(item.label)
+      }
+      }
+    })
+  })
+
+  setOpenSubs(matchedSubs)
+}, [location.pathname])
   const toggleSub = (label: string) => {
     setOpenSubs(prev => prev.includes(label) ? prev.filter(l => l !== label) : [...prev, label])
   }
@@ -132,7 +155,9 @@ export default function Sidebar({ active }: SidebarProps) {
             <p className="text-white/25 text-xs font-bold tracking-widest px-2 py-1 mt-1" style={{ fontSize: '9px' }}>{group.label}</p>
             {group.items.map((item) => {
               const Icon = item.icon
-              const isActive = active === item.label
+              const isActive =
+  active === item.to ||
+  item.sub?.some(s => s.to === active)
               const hasSub = item.sub && item.sub.length > 0
               const isOpen = openSubs.includes(item.label)
 
@@ -140,7 +165,10 @@ export default function Sidebar({ active }: SidebarProps) {
                 <div key={item.label}>
                   {hasSub ? (
                     <button
-                      onClick={() => toggleSub(item.label)}
+                      onClick={() => {
+                        toggleSub(item.label)
+                        navigate(item.to)
+                      }}
                       className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg mb-0.5 cursor-pointer transition-all duration-150 text-xs font-medium ${
                         isActive ? 'text-white' : 'text-teal-100/60 hover:text-white hover:bg-white/5'
                       }`}

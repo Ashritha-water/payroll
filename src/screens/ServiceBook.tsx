@@ -3,6 +3,7 @@ import React, { useState } from 'react'
 import Components from '../components'
 import { Search, Download, Printer, BookOpen, User, Award, TrendingUp, Shield, Calendar, FileText, ChevronRight, CheckCircle, AlertCircle, Clock, Edit3 } from 'lucide-react'
 import { Link } from '@/lib'
+import { useLocation } from 'react-router-dom'
 
 const employee = {
   empId: 'GHMC-004892',
@@ -76,11 +77,12 @@ const typeConfig: Record<string, { color: string; bg: string; label: string }> =
 }
 
 export default function ServiceBook() {
+  const location = useLocation()
   const [tab, setTab] = useState('service')
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Components.Sidebar active="Employees" />
+      <Components.Sidebar active={location.pathname} />
       <Components.TopBar />
       <main className="ml-60 pt-14 p-6">
         <div className="flex gap-2 mb-4">

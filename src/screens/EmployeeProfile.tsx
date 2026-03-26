@@ -5,6 +5,7 @@ import { Link } from '@/lib'
 import { ArrowLeft, Edit, Download, Phone, Mail, MapPin, Calendar, Award, BookOpen, TrendingUp, Shield, Briefcase, Clock, CheckCircle, AlertCircle, Printer } from 'lucide-react'
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
 import { AreaChart, Area, XAxis, YAxis, BarChart, Bar } from 'recharts'
+import { useLocation } from 'react-router-dom'
 
 const payProgression = [
   { year: '2015', pay: 44900 }, { year: '2016', pay: 47600 }, { year: '2017', pay: 50400 },
@@ -58,11 +59,12 @@ const tabs = [
 type Tab = (typeof tabs)[number]['key']
 
 export default function EmployeeProfile() {
+  const location = useLocation()
   const [tab, setTab] = useState<Tab>('overview')
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Components.Sidebar active="Employee Master" />
+      <Components.Sidebar active={location.pathname} />
       <Components.TopBar />
       <main className="ml-60 pt-14 p-6">
         <div className="flex items-center gap-3 mb-3">
@@ -73,7 +75,7 @@ export default function EmployeeProfile() {
           <span className="text-sm font-semibold text-gray-800">GHMC-001234 — Srinivas Reddy K.</span>
         </div>
         {/* Deep-link navigation strip */}
-        <div className="flex gap-2 mb-4">
+        {/* <div className="flex gap-2 mb-4">
           {[
             { label: 'Employee Profile', to: '/EmployeeProfile', active: true },
             { label: 'Service Book', to: '/ServiceBook' },
@@ -92,7 +94,7 @@ export default function EmployeeProfile() {
               {link.label}
             </Link>
           ))}
-        </div>
+        </div> */}
 
         {/* Header Card */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-4 flex gap-6 items-start">

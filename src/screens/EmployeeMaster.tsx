@@ -3,6 +3,7 @@ import React, { useState } from 'react'
 import Components from '../components'
 import { Search, ChevronRight, ChevronDown, Plus, Filter } from 'lucide-react'
 import { Link } from '@/lib'
+import { useLocation } from 'react-router-dom'
 
 const employees = [
   { id: 'GHMC-001234', initials: 'SR', name: 'Srinivas Reddy K.', designation: 'Deputy Commissioner', cadre: 'I', zone: 'Charminar / Falaknuma', doj: '15 Mar 2005', basicPay: 78800, status: 'Active' },
@@ -22,6 +23,8 @@ const bgColors = ['#1A3555', '#2D6A4F', '#7B2D8B', '#B5451B', '#1565C0', '#6D4C4
 const zones = ['All Zones', 'Charminar Zone', 'Khairatabad Zone', 'Serilingampally Zone', 'Kukatpally Zone', 'Secunderabad Zone', 'LB Nagar Zone', 'Malkajgiri Zone', 'Uppal Zone']
 
 export default function EmployeeMaster() {
+  const location = useLocation()
+
   const [search, setSearch] = useState('')
   const [zone, setZone] = useState('All Zones')
   const [showAdd, setShowAdd] = useState(false)
@@ -33,7 +36,7 @@ export default function EmployeeMaster() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Components.Sidebar active="Employee Master" />
+      <Components.Sidebar active={location.pathname} />
       <Components.TopBar />
       <main className="ml-60 pt-14 p-6">
         <div className="flex justify-between items-center mb-6">
