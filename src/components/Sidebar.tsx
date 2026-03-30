@@ -1,5 +1,5 @@
 'use client'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Link } from '@/lib'
 import {
   LayoutDashboard, Users, DollarSign, Calendar, Clock,
@@ -16,6 +16,15 @@ interface SidebarProps {
   active?: string
 }
 
+const ROUTE_GROUPS: Record<string, string[]> = {
+  "/EmployeeMaster": [
+    "/EmployeeMaster",
+    "/EmployeeProfile",
+    "/ServiceBook",
+    "/AddEmployee",
+  ],
+};
+
 const groups = [
   {
     label: 'CORE',
@@ -27,10 +36,7 @@ const groups = [
   {
     label: 'EMPLOYEES',
     items: [
-      { label: 'Employee Master', icon: Users, to: '/EmployeeMaster', sub: [
-        { label: 'Employee Profile', to: '/EmployeeProfile' },
-        { label: 'Service Book', to: '/ServiceBook' },
-      ]},
+      { label: 'Employee Master', icon: Users, to: '/EmployeeMaster'},
       { label: 'Promote & Transfer', icon: TrendingUp, to: '/PromotionTransfer', sub: [
         { label: 'Roster Management', to: '/RosterManagement' },
         { label: 'Recruitment', to: '/RecruitmentOnboarding' },
@@ -111,25 +117,14 @@ export default function Sidebar({ active }: SidebarProps) {
   const [openSubs, setOpenSubs] = useState<string[]>([])
   const navigate = useNavigate()
 
-  React.useEffect(() => {
-  const currentPath = location.pathname
-    console.log("Calling First Time")
-  const matchedSubs: string[] = []
+  const navRef = React.useRef<HTMLDivElement | null>(null)
+  const scrollPosition = React.useRef(0)
 
-  groups.forEach(group => {
-    group.items.forEach(item => {
-      if (item.sub) {
-        const isChildActive = item.sub.some(sub => sub.to === currentPath)
-      const isParentActive = item.to === currentPath
-
-      if (isChildActive || isParentActive) {
-        matchedSubs.push(item.label)
-      }
-      }
-    })
-  })
-
-  setOpenSubs(matchedSubs)
+  useEffect(() => {
+  const saved = sessionStorage.getItem('sidebar-scroll')
+  if (navRef.current && saved) {
+    navRef.current.scrollTop = Number(saved)
+  }
 }, [location.pathname])
   const toggleSub = (label: string) => {
     setOpenSubs(prev => prev.includes(label) ? prev.filter(l => l !== label) : [...prev, label])
@@ -149,18 +144,28 @@ export default function Sidebar({ active }: SidebarProps) {
         </div>
       </div>
 
-      <nav className="flex-1 overflow-y-auto py-2 px-2 scrollbar-none" style={{ scrollbarWidth: 'none' }}>
+      <nav ref={navRef}
+  onScroll={() => {
+  sessionStorage.setItem('sidebar-scroll', String(navRef.current?.scrollTop || 0))
+}} className="flex-1 overflow-y-auto py-2 px-2 scrollbar-none" style={{ scrollbarWidth: 'none' }}>
         {groups.map((group) => (
           <div key={group.label} className="mb-1">
             <p className="text-white/25 text-xs font-bold tracking-widest px-2 py-1 mt-1" style={{ fontSize: '9px' }}>{group.label}</p>
             {group.items.map((item) => {
               const Icon = item.icon
-              const isActive =
-  active === item.to ||
-  item.sub?.some(s => s.to === active)
-              const hasSub = item.sub && item.sub.length > 0
-              const isOpen = openSubs.includes(item.label)
+              const currentPath = location.pathname
+              const groupRoutes = ROUTE_GROUPS[item.to] || [];
 
+const isActive =
+  groupRoutes.includes(currentPath) ||
+  currentPath === item.to ||
+  item.sub?.some(s => s.to === currentPath);
+              const hasSub = item.sub && item.sub.length > 0
+              const isOpen =
+  groupRoutes.includes(currentPath) ||
+  currentPath === item.to || 
+  item.sub?.some(s => s.to === currentPath) ||
+  openSubs.includes(item.label)
               return (
                 <div key={item.label}>
                   {hasSub ? (
@@ -169,9 +174,8 @@ export default function Sidebar({ active }: SidebarProps) {
                         toggleSub(item.label)
                         navigate(item.to)
                       }}
-                      className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg mb-0.5 cursor-pointer transition-all duration-150 text-xs font-medium ${
-                        isActive ? 'text-white' : 'text-teal-100/60 hover:text-white hover:bg-white/5'
-                      }`}
+                      className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg mb-0.5 cursor-pointer transition-all duration-150 text-xs font-medium ${isActive ? 'text-white' : 'text-teal-100/60 hover:text-white hover:bg-white/5'
+                        }`}
                       style={isActive ? { backgroundColor: 'rgba(36,140,124,0.25)', borderLeft: '3px solid #EC3898', paddingLeft: '7px' } : {}}
                     >
                       <Icon size={14} className="flex-shrink-0" />
@@ -181,9 +185,8 @@ export default function Sidebar({ active }: SidebarProps) {
                   ) : (
                     <Link
                       to={item.to}
-                      className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg mb-0.5 cursor-pointer transition-all duration-150 text-xs font-medium ${
-                        isActive ? 'text-white' : 'text-teal-100/60 hover:text-white hover:bg-white/5'
-                      }`}
+                      className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg mb-0.5 cursor-pointer transition-all duration-150 text-xs font-medium ${isActive ? 'text-white' : 'text-teal-100/60 hover:text-white hover:bg-white/5'
+                        }`}
                       style={isActive ? { backgroundColor: 'rgba(36,140,124,0.25)', borderLeft: '3px solid #EC3898', paddingLeft: '7px' } : {}}
                     >
                       <Icon size={14} className="flex-shrink-0" />
@@ -192,17 +195,23 @@ export default function Sidebar({ active }: SidebarProps) {
                   )}
                   {hasSub && isOpen && (
                     <div className="ml-5 mb-1">
-                      {item.sub!.map((s) => (
-                        <Link
-                          key={s.label}
-                          to={s.to}
-                          className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg mb-0.5 cursor-pointer transition-all duration-150 text-teal-300/45 hover:text-teal-100 hover:bg-white/5"
-                          style={{ fontSize: '11px' }}
-                        >
-                          <div className="w-1 h-1 rounded-full flex-shrink-0" style={{ backgroundColor: '#EC3898', opacity: 0.5 }} />
-                          {s.label}
-                        </Link>
-                      ))}
+                      {item.sub!.map((s) => {
+                        const isSubActive = location.pathname === s.to
+                        return (
+                          <Link
+                            key={s.label}
+                            to={s.to}
+                            className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg mb-0.5 cursor-pointer transition-all duration-150 text-xs ${isSubActive
+                              ? 'text-white bg-white/10'
+                              : 'text-teal-300/45 hover:text-teal-100 hover:bg-white/5'
+                              }`}
+                            style={{ fontSize: '11px' }}
+                          >
+                            <div className="w-1 h-1 rounded-full flex-shrink-0" style={{ backgroundColor: '#EC3898', opacity: 0.5 }} />
+                            {s.label}
+                          </Link>
+                        )
+                      })}
                     </div>
                   )}
                 </div>

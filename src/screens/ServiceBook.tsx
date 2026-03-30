@@ -1,28 +1,10 @@
 'use client'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Components from '../components'
 import { Search, Download, Printer, BookOpen, User, Award, TrendingUp, Shield, Calendar, FileText, ChevronRight, CheckCircle, AlertCircle, Clock, Edit3 } from 'lucide-react'
 import { Link } from '@/lib'
-import { useLocation } from 'react-router-dom'
-
-const employee = {
-  empId: 'GHMC-004892',
-  name: 'K. Venkateswara Rao',
-  photo: '',
-  designation: 'Executive Engineer (Civil)',
-  cadre: 'Class-I Gazetted',
-  dob: '15-Jun-1972',
-  doj: '12-Mar-1997',
-  department: 'Engineering & Projects',
-  zone: 'Kukatpally',
-  serviceYears: 29,
-  retirementDate: '30-Jun-2032',
-  pfNo: 'GPF/TS/12456',
-  pan: 'BXKPV4891F',
-  aadhar: 'XXXX-XXXX-7823',
-  sbAccount: 'SBI 00321456789',
-  mobile: '+91 94400 12345',
-}
+import { useLocation, useParams } from 'react-router-dom'
+import { getEmployeeById, getEmployeeProfileOverview, getEmployeQualifications, getEmployeServiceHistory } from '@/services/employee/employee.api'
 
 const serviceHistory = [
   { date: '01-Jan-2024', event: 'Annual Increment', details: 'Basic Pay revised from ₹71,100 to ₹73,200 (Pay Level 12)', type: 'pay', authority: 'GO Ms. No. 12/2024 FIN(HRM.IV)', verified: true },
@@ -78,7 +60,58 @@ const typeConfig: Record<string, { color: string; bg: string; label: string }> =
 
 export default function ServiceBook() {
   const location = useLocation()
+  const { id } = useParams();
   const [tab, setTab] = useState('service')
+  const [employee, setEmployee] = useState<any>(null);
+  const [overview, setOverview] = useState<any>(null);
+  //const [serviceHistory, setServiceHistory] = useState<any[]>([]);
+  //const [qualifications,setQualifications] = useState<any[]>([]);
+
+
+  useEffect(() => {
+      sessionStorage.setItem("employeeTab", tab);
+      const fetchData = async () => {
+        try {
+          const [profileRes, overviewRes,serviceRes, qualificationRes ] = await Promise.all([
+            getEmployeeById(id as any),
+            getEmployeeProfileOverview(id as any),
+            getEmployeServiceHistory(id as any),
+            getEmployeQualifications(id as any )
+          ]);
+  
+          setEmployee(profileRes.data.employeeData);
+          setOverview(overviewRes.data);
+          //setServiceHistory(serviceRes.data.timeline)
+          //setQualifications(qualificationRes.data)
+        } catch (err) {
+          console.error("Error fetching employee data", err);
+        }
+      };
+  
+      if (id) fetchData();
+    }, [id,tab]);
+  
+  const initials =
+    employee?.name
+      ?.split(" ")
+      .map((n: string) => n[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase() || "--";
+
+
+    const formatDate = (date?: string) => {
+      if (!date) return "--";
+      return new Date(date).toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      });
+    };
+
+    const getValue = (val: any) => {
+      return val !== null && val !== undefined && val !== "" ? val : "--";
+    };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -87,13 +120,13 @@ export default function ServiceBook() {
       <main className="ml-60 pt-14 p-6">
         <div className="flex gap-2 mb-4">
           {[
-            { label: 'Employee Profile', to: '/EmployeeProfile' },
-            { label: 'Service Book', to: '/ServiceBook', active: true },
-            { label: 'GPF Statement', to: '/GPFStatement' },
-            { label: 'NPS & Pension', to: '/NPSPension' },
-            { label: 'ACR / PAR', to: '/ACRPerformance' },
-            { label: 'Pay Slips', to: '/Payroll' },
-            { label: 'Leave', to: '/LeaveManagement' },
+            { label: 'Employee Profile', to: `/employee/${id}/profile` },
+            { label: 'Service Book', to: `/employee/${id}/ServiceBook` , active:true},
+            { label: 'GPF Statement', to: `/employee/${id}/gpf` },
+            { label: 'NPS & Pension', to: `/employee/${id}/nps` },
+            { label: 'ACR / PAR', to: `/employee/${id}/acr` },
+            { label: 'Pay Slips', to: `/employee/${id}/payroll` },
+            { label: 'Leave', to: `/employee/${id}/leave` },
           ].map(link => (
             <Link
               key={link.label}
@@ -126,36 +159,40 @@ export default function ServiceBook() {
         {/* Employee Header Card */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-5">
           <div className="flex gap-6">
-            <div className="w-20 h-20 rounded-2xl flex-shrink-0 flex items-center justify-center text-white text-3xl font-black" style={{ backgroundColor: '#1A3555' }}>
-              {employee.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+            {/* Avatar */}
+            <div
+              className="w-20 h-20 rounded-2xl flex items-center justify-center text-white text-2xl font-black"
+              style={{ backgroundColor: "#1A3555" }}
+            >
+              {initials}
             </div>
             <div className="flex-1">
               <div className="flex justify-between items-start">
                 <div>
-                  <h2 className="text-xl font-black text-gray-900">{employee.name}</h2>
-                  <p className="text-sm font-semibold text-blue-700 mt-0.5">{employee.designation}</p>
+                  <h2 className="text-xl font-black text-gray-900">{employee?.name}</h2>
+                  <p className="text-sm font-semibold text-blue-700 mt-0.5">{employee?.designation}</p>
                   <div className="flex gap-4 mt-2 flex-wrap">
-                    <span className="text-xs bg-blue-50 text-blue-700 font-semibold px-2.5 py-1 rounded-full">{employee.cadre}</span>
-                    <span className="text-xs bg-green-50 text-green-700 font-semibold px-2.5 py-1 rounded-full">{employee.zone} Zone</span>
-                    <span className="text-xs bg-amber-50 text-amber-700 font-semibold px-2.5 py-1 rounded-full">{employee.department}</span>
+                    <span className="text-xs bg-blue-50 text-blue-700 font-semibold px-2.5 py-1 rounded-full">{employee?.cadre}</span>
+                    <span className="text-xs bg-green-50 text-green-700 font-semibold px-2.5 py-1 rounded-full">{employee?.zone} Zone</span>
+                    <span className="text-xs bg-amber-50 text-amber-700 font-semibold px-2.5 py-1 rounded-full">{employee?.department}</span>
                   </div>
                 </div>
                 <div className="text-right">
                   <p className="text-xs text-gray-400 font-semibold uppercase tracking-wide">Employee ID</p>
-                  <p className="text-lg font-black text-gray-900 mt-0.5">{employee.empId}</p>
-                  <p className="text-xs text-gray-500">GPF: {employee.pfNo}</p>
+                  <p className="text-lg font-black text-gray-900 mt-0.5">{employee?.employee_code}</p>
+                  <p className="text-xs text-gray-500">GPF: {employee?.pfNo}</p>
                 </div>
               </div>
             </div>
           </div>
           <div className="grid grid-cols-6 gap-4 mt-5 pt-4 border-t border-gray-100">
             {[
-              { label: 'Date of Birth', value: employee.dob },
-              { label: 'Date of Joining', value: employee.doj },
-              { label: 'Service Length', value: `${employee.serviceYears} Years` },
-              { label: 'Retirement Date', value: employee.retirementDate },
-              { label: 'PAN Number', value: employee.pan },
-              { label: 'Mobile', value: employee.mobile },
+              { label: 'Date of Birth', value: formatDate(employee?.dob) },
+              { label: 'Date of Joining', value: formatDate(employee?.doj) },
+              { label: 'Service Length', value: `${employee?.serviceYears} Years` },
+              { label: 'Retirement Date', value: employee?.retirementDate },
+              { label: 'PAN Number', value: employee?.pan },
+              { label: 'Mobile', value: employee?.phone },
             ].map(f => (
               <div key={f.label}>
                 <p className="text-xs text-gray-400 font-semibold uppercase tracking-wide">{f.label}</p>
@@ -232,18 +269,88 @@ export default function ServiceBook() {
         {tab === 'personal' && (
           <div className="grid grid-cols-2 gap-4">
             {[
-              { title: 'Personal Information', fields: [['Full Name', employee.name], ['Date of Birth', employee.dob], ['Gender', 'Male'], ['Caste', 'OC'], ['Religion', 'Hindu'], ['Marital Status', 'Married'], ['Nationality', 'Indian'], ['Mother Tongue', 'Telugu']] },
-              { title: 'Service Information', fields: [['Employee ID', employee.empId], ['Designation', employee.designation], ['Cadre', employee.cadre], ['Department', employee.department], ['Zone/Circle', employee.zone], ['Date of Joining', employee.doj], ['Service Length', `${employee.serviceYears} Years`], ['Retirement Date', employee.retirementDate]] },
-              { title: 'Financial Identifiers', fields: [['PAN Number', employee.pan], ['Aadhaar', employee.aadhar], ['GPF Account', employee.pfNo], ['NPS PRAN', 'PRAN-110098765432'], ['Bank Account', employee.sbAccount], ['IFSC', 'SBIN0012345']] },
-              { title: 'Contact & Address', fields: [['Mobile', employee.mobile], ['Email', 'k.venkat.rao@ghmc.gov.in'], ['Address', 'H.No. 5-6-123, Kukatpally, Hyderabad — 500072'], ['Emergency Contact', '+91 98480 45678 (Spouse)']] },
-            ].map(section => (
-              <div key={section.title} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-                <h3 className="font-bold text-gray-900 mb-4 text-sm uppercase tracking-wide">{section.title}</h3>
+              {
+                title: 'Personal Information',
+                fields: [
+                  ['Full Name', getValue(overview?.personal?.full_name || employee?.name)],
+                  ['Date of Birth', getValue(overview?.personal?.dob || employee?.dob)],
+                  ['Gender', getValue(overview?.personal?.gender)],
+                  ['Caste', getValue(overview?.personal?.caste)],
+                  ['Religion', getValue(overview?.personal?.religion)],
+                  ['Marital Status', getValue(overview?.personal?.marital_status)],
+                  ['Nationality', getValue(overview?.personal?.nationality)],
+                  ['Mother Tongue', getValue(overview?.personal?.mother_tongue)],
+                ],
+              },
+              {
+                title: 'Service Information',
+                fields: [
+                  ['Employee ID', getValue(employee?.employee_code)],
+                  ['Designation', getValue(employee?.designation)],
+                  ['Cadre', getValue(employee?.cadre)],
+                  ['Department', getValue(employee?.department)],
+                  ['Zone/Circle', getValue(employee?.zone)],
+                  ['Date of Joining', getValue(employee?.doj)],
+                  ['Service Length', employee?.serviceYears ? `${employee.serviceYears} Years` : '--'],
+                  ['Retirement Date', getValue(employee?.retirementDate)],
+                ],
+              },
+              {
+                title: 'Financial Identifiers',
+                fields: [
+                  ['PAN Number', getValue(overview?.personal?.pan || employee?.pan)],
+                  ['Aadhaar', getValue(overview?.personal?.aadhaar)],
+                  ['GPF Account', getValue(overview?.bank?.gpf || employee?.pfNo)],
+                  ['NPS PRAN', getValue(overview?.bank?.nps)],
+                  ['Bank Account', getValue(overview?.bank?.account_number)],
+                  ['IFSC', getValue(overview?.bank?.ifsc)],
+                ],
+              },
+              {
+                title: 'Contact & Address',
+                fields: [
+                  ['Mobile', getValue(employee?.phone)],
+                  ['Email', getValue(employee?.email)],
+                  [
+                    'Address',
+                    getValue(
+                      overview?.address?.present
+                        ? `${overview.address.present.address_line1}, ${overview.address.present.city} - ${overview.address.present.pin_code}`
+                        : null
+                    ),
+                  ],
+                  [
+                    'Emergency Contact',
+                    getValue(
+                      overview?.emergency_contact
+                        ? `${overview.emergency_contact.phone} (${overview.emergency_contact.relation})`
+                        : null
+                    ),
+                  ],
+                ],
+              },
+            ].map((section) => (
+              <div
+                key={section.title}
+                className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5"
+              >
+                <h3 className="font-bold text-gray-900 mb-4 text-sm uppercase tracking-wide">
+                  {section.title}
+                </h3>
+
                 <div className="space-y-3">
                   {section.fields.map(([label, val]) => (
-                    <div key={label} className="flex justify-between items-start pb-2.5 border-b border-gray-50 last:border-0 last:pb-0">
-                      <span className="text-xs text-gray-400 font-medium w-40 flex-shrink-0">{label}</span>
-                      <span className="text-sm font-semibold text-gray-800 text-right">{val}</span>
+                    <div
+                      key={label}
+                      className="flex justify-between items-start pb-2.5 border-b border-gray-50 last:border-0 last:pb-0"
+                    >
+                      <span className="text-xs text-gray-400 font-medium w-40 flex-shrink-0">
+                        {label}
+                      </span>
+
+                      <span className="text-sm font-semibold text-gray-800 text-right">
+                        {val}
+                      </span>
                     </div>
                   ))}
                 </div>

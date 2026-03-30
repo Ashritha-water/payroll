@@ -5,6 +5,7 @@ import { Download, TrendingUp, DollarSign, Calculator, AlertCircle, CheckCircle,
 import { Link } from '@/lib'
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
 import { AreaChart, Area, XAxis, YAxis, BarChart, Bar } from 'recharts'
+import { useParams } from 'react-router'
 
 const corpusGrowth = [
   { year: '2015', balance: 480000 },
@@ -52,6 +53,7 @@ const chartConfig = {
 }
 
 export default function GPFStatement() {
+  const { id } = useParams();
   const [tab, setTab] = useState<'statement' | 'advances' | 'projection' | 'history'>('statement')
   const [projYears, setProjYears] = useState('3')
 
@@ -68,13 +70,14 @@ export default function GPFStatement() {
       <main className="ml-60 pt-14 p-6">
         <div className="flex gap-2 mb-4">
           {[
-            { label: 'Employee Profile', to: '/EmployeeProfile' },
-            { label: 'Service Book', to: '/ServiceBook' },
-            { label: 'GPF Statement', to: '/GPFStatement', active: true },
-            { label: 'NPS & Pension', to: '/NPSPension' },
-            { label: 'ACR / PAR', to: '/ACRPerformance' },
-            { label: 'Pay Slips', to: '/Payroll' },
-            { label: 'Leave', to: '/LeaveManagement' },
+            { label: 'Employee Master', to: `/EmployeeMaster` },
+            { label: 'Employee Profile', to: `/employee/${id}/profile` },
+            { label: 'Service Book', to: `/employee/${id}/ServiceBook` },
+            { label: 'GPF Statement', to: `/employee/${id}/gpf` ,active:true},
+            { label: 'NPS & Pension', to: `/employee/${id}/nps` },
+            { label: 'ACR / PAR', to: `/employee/${id}/acr` },
+            { label: 'Pay Slips', to: `/employee/${id}/payroll` },
+            { label: 'Leave', to: `/employee/${id}/leave` },
           ].map(link => (
             <Link
               key={link.label}

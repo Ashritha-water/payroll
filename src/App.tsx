@@ -13,6 +13,13 @@ export default function App() {
 					element={<ScreenComponent />}
 				/>
 			))}
+			<Route path="/employee/:id/profile" element={<screens.EmployeeProfile />} />
+			<Route path="/employee/:id/ServiceBook" element={<screens.ServiceBook />} />
+			<Route path="/employee/:id/gpf" element={<screens.GPFStatement />} />
+			<Route path="/employee/:id/nps" element={<screens.NPSPension />} />
+			<Route path="/employee/:id/acr" element={<screens.ACRPerformance />} />
+			<Route path="/employee/:id/payroll" element={<screens.Payroll />} />
+			<Route path="/employee/:id/leave" element={<screens.LeaveManagement />} />
 		</Routes>
 	)
 }

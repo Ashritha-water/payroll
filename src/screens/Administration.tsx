@@ -62,6 +62,7 @@ export default function Administration() {
   const [showAddUser, setShowAddUser] = useState(false)
   const [newUser, setNewUser] = useState({
     name: '',
+    email:'',
     role: '',
     access: '',
     status: 'active',
@@ -317,6 +318,19 @@ export default function Administration() {
                     onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
                     className="w-full border rounded-lg px-3 py-2 text-sm"
                     placeholder="Enter full name"
+                  />
+                </div>
+                {/* Email */}
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1">
+                    Email
+                  </label>
+                  <input
+                    type="text"
+                    value={newUser.email}
+                    onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+                    className="w-full border rounded-lg px-3 py-2 text-sm"
+                    placeholder="Enter Email"
                   />
                 </div>
 
